@@ -52,6 +52,13 @@ module BaseModel
         raise 'Unimplemented'
       end
 
+      def connection
+        return @connection if @connection
+        @connection = RestConnection.connections.first
+        raise(Error, "No connection associated with #{self}: have you connected to a data source?") unless @connection
+        @connection
+      end
+
       def primary_key_lookup(pk)
         new connection.call(:get, "#{source}/#{pk}")
       end

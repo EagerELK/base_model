@@ -6,6 +6,9 @@ module BaseModel
   class ValidationFailed
   end
 
+  class Error < StandardError
+  end
+
   class Errors
     include Enumerable
 

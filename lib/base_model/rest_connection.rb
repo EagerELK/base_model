@@ -58,7 +58,11 @@ module BaseModel
 
     class << self
       def connect(url = nil, opts = {})
-        new(url, opts)
+        connections << new(url, opts)
+      end
+
+      def connections
+        @connections ||= []
       end
     end
   end
