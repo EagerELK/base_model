@@ -1,26 +1,10 @@
 # frozen_string_literal: true
 
 require 'logger'
+require 'sequel/model/errors'
 
 module BaseModel
   class ValidationFailed
-  end
-
-  class Error < StandardError
-  end
-
-  class Errors
-    include Enumerable
-
-    def initialize
-      @collection = []
-    end
-
-    def each
-      @collection.each do |val|
-        yield val
-      end
-    end
   end
 
   class Model
@@ -68,7 +52,7 @@ module BaseModel
       end
 
       def errors
-        @errors ||= Errors.new
+        @errors ||= Sequel::Model::Errors.new
       end
 
       def validate; end
@@ -207,6 +191,14 @@ module BaseModel
 
       def find(filters = {})
         filters.is_a?(Hash) ? where(filters).first : (primary_key_lookup(filters) unless filters.nil?)
+      end
+
+      def with_pk(pk)
+        primary_key_lookup(pk)
+      end
+
+      def with_pk!(pk)
+        with_pk || raise('Could not find the specified object')
       end
 
       def where(_filters = {})
