@@ -7,17 +7,28 @@ require 'active_support/inflector'
 module BaseModel
   class RestModel < Model
     module InstanceMethods
-      def _save
+      def _save(opts = {})
+        opts[:changed] = true if opts[:changed].nil?
         if new?
-          connection.call(:post, source, values.to_json)
+          connection.call(:post, source, as_parameter.to_json)
           # TODO: Refresh values
         else
-          connection.call(:put, "#{source}/#{pk}", values.to_json)
+          cols_to_save = opts[:columns]
+          if cols_to_save.nil?
+            cols_to_save = opts[:changed] ? changed_columns : columns
+          end
+          columns_updated = @values.reject{|k,v| !cols_to_save.include?(k)}
+          connection.call(:put, "#{source}/#{pk}", as_parameter(columns_updated).to_json)
         end
       end
 
       def _destroy
         connection.call(:delete, "#{source}/#{pk}")
+      end
+
+      def as_parameter(vals = nil)
+        vals ||= values
+        { self.class.to_s.demodulize.underscore => vals }
       end
     end
 

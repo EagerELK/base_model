@@ -27,12 +27,11 @@ module BaseModel
       headers = headers.merge options[:headers] if options[:headers]
 
       uri = URI.parse endpoint_url
+      uri.path = url
 
       if http_method == :get
         query = uri.query.nil? ? payload : CGI.parse(uri.query).merge(payload)
         uri.query = URI.encode_www_form(query)
-        uri.path = url
-        payload = nil
       end
       url = uri.to_s
 
@@ -43,15 +42,14 @@ module BaseModel
         response = RestClient::Request.execute(
           method: http_method,
           url: url,
-          payload: payload,
+          payload: http_method.to_sym == :get ? nil : payload,
           headers: headers,
           max_redirects: 0,
           &block
         )
         parse response
       rescue RestClient::ExceptionWithResponse, SocketError
-        tries += 1
-        retry unless tries > 1
+        retry unless (tries +=1 ) > 1
         raise
       end
     end
