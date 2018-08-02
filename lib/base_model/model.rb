@@ -10,10 +10,21 @@ module BaseModel
   class Model
     module InstanceMethods
       def initialize(values = {})
+        @values = {}
+        initialize_columns
         set values
-        # TODO: yield
+        _changed_columns.clear
+        yield self if block_given?
       end
 
+      def initialize_columns
+        self.class.columns.each do |k|
+          self.class.send(:define_method, k, proc { self[k] })
+          self.class.send(:define_method, "#{k}=", proc { |var| self[k] = var })
+        end
+      end
+
+      # Returns the primary key value identifying the model instance.
       def pk
         raise 'Unimplemented'
       end
@@ -23,18 +34,15 @@ module BaseModel
       end
 
       def set(values = {})
+        return self if values.empty?
         values.each do |k, v|
           next unless self.class.columns.include?(k.to_sym)
-          instance_variable_set("@#{k}", v)
-          self.class.send(:define_method, k, proc { instance_variable_get("@#{k}") })
-          self.class.send(:define_method, "#{k}=", proc { |var| instance_variable_set("@#{k}", var) })
+          change_column_value(k, v)
         end
       end
 
       def values
-        columns.map do |c|
-          [c, send(c)]
-        end.to_h
+        @values
       end
 
       def update(values = {})
@@ -44,11 +52,11 @@ module BaseModel
 
       # Easy access to attributes
       def [](key)
-        send(key) if key.is_a?(String) || key.is_a?(Symbol)
+        @values[key.to_sym]
       end
 
       def []=(key, value)
-        send(:"#{key}=", value)
+        change_column_value(key.to_sym, value)
       end
 
       def errors
@@ -81,6 +89,7 @@ module BaseModel
         before_save
         _save
         after_save
+        _changed_columns.clear
       end
 
       def _save
@@ -129,6 +138,29 @@ module BaseModel
       # def respond_to_missing?(method, _include_private = false)
       #   self.class.respond_to? method
       # end
+
+      def changed_columns
+        _changed_columns
+      end
+
+      def change_column_value(column, value)
+        _add_changed_column(column)
+        set_column_value(column, value)
+      end
+
+      def set_column_value(column, value)
+        @values[column.to_sym] = value
+      end
+
+      private
+
+      def _add_changed_column(column)
+        _changed_columns << column unless _changed_columns.include?(column)
+      end
+
+      def _changed_columns
+        @changed_columns ||= []
+      end
     end
 
     module ClassMethods
