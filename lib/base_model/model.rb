@@ -130,15 +130,6 @@ module BaseModel
         self.class.columns
       end
 
-      # def method_missing(method, *args, &block)
-      #   return super unless respond_to_missing?(method)
-      #   self.class.send(method, *args, &block)
-      # end
-
-      # def respond_to_missing?(method, _include_private = false)
-      #   self.class.respond_to? method
-      # end
-
       def changed_columns
         _changed_columns
       end
@@ -160,6 +151,15 @@ module BaseModel
 
       def _changed_columns
         @changed_columns ||= []
+      end
+
+      # Just return the object to ensure Sequel compatibility
+      def transaction
+        self
+      end
+
+      def db
+        self
       end
     end
 
