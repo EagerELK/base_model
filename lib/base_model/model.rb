@@ -145,10 +145,12 @@ module BaseModel
 
       # Just return the object to ensure Sequel compatibility
       def transaction
+        yield self if block_given?
         self
       end
 
       def db
+        yield self if block_given?
         self
       end
 
