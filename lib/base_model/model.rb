@@ -143,6 +143,15 @@ module BaseModel
         @values[column.to_sym] = value
       end
 
+      # Just return the object to ensure Sequel compatibility
+      def transaction
+        self
+      end
+
+      def db
+        self
+      end
+
       private
 
       def _add_changed_column(column)
@@ -151,15 +160,6 @@ module BaseModel
 
       def _changed_columns
         @changed_columns ||= []
-      end
-
-      # Just return the object to ensure Sequel compatibility
-      def transaction
-        self
-      end
-
-      def db
-        self
       end
     end
 
