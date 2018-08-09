@@ -19,8 +19,8 @@ module BaseModel
 
       def initialize_columns
         self.class.columns.each do |k|
-          self.class.send(:define_method, k, proc { self[k] })
-          self.class.send(:define_method, "#{k}=", proc { |var| self[k] = var })
+          self.class.send(:define_method, k, proc { self[k] }) unless self.class.method_defined?(k)
+          self.class.send(:define_method, "#{k}=", proc { |var| self[k] = var }) unless self.class.method_defined?("#{k}=")
         end
       end
 

@@ -7,9 +7,32 @@ require 'will_paginate/array'
 module BaseModel
   class FileModel < Model
     module InstanceMethods
-      attr_reader :path, :filename
+      attr_reader :path, :stat
 
-      alias id filename
+      def initialize(values = {})
+        super
+        @path = File.expand_path(File.join(source, filename)) if filename
+      end
+
+      def id=(value)
+        change_column_value(:id, value)
+        if value.nil?
+          @path = nil
+          @stat = nil
+        else
+          @path = File.expand_path(File.join(source, filename))
+          @stat = File::Stat.new(@path)
+        end
+        @content = nil
+      end
+
+      def filename
+        id
+      end
+
+      def filename=(value)
+        id= value
+      end
 
       def _save
         # TODO: Convert hash to yaml
@@ -22,10 +45,12 @@ module BaseModel
       end
 
       def [](key)
-        super || stat[key.to_sym]
+        return super unless stat.respond_to?(key.to_sym)
+        stat.send(key.to_sym)
       end
 
       def []=(key, value)
+        raise 'Read only property' if %i[path stat].include?(key)
         change_column_value(key.to_sym, value)
       end
 
@@ -33,16 +58,8 @@ module BaseModel
         File.basename(filename, '.*').humanize.titleize
       end
 
-      def path
-        File.expand_path(File.join(source, filename)) if source && filename
-      end
-
-      def stat
-        @stat ||= File::Stat.new(path)
-      end
-
       def content
-        File.read(path) if path
+        @content ||= File.read(path) if path
       end
     end
 
@@ -75,11 +92,11 @@ module BaseModel
       end
 
       def primary_key
-        :filename
+        :id
       end
 
       def dataset
-        Dir[File.join(source, "*.#{extension}")].map { |path| new filename: File.basename(path) }
+        Dir[File.join(source, "*.#{extension}")].map { |path| new id: File.basename(path) }
       end
 
       def all
@@ -93,7 +110,7 @@ module BaseModel
       end
 
       def columns
-        %i[id filename content]
+        %i[id filename name path stat content]
       end
 
       def inherited(subclass)
@@ -114,7 +131,7 @@ module BaseModel
       private
 
       def primary_key_lookup(pk)
-        new filename: pk
+        new id: pk
       end
     end
 
