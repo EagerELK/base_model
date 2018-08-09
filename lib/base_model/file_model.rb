@@ -22,7 +22,7 @@ module BaseModel
       end
 
       def [](key)
-        super || @stat[key.to_sym]
+        super || stat[key.to_sym]
       end
 
       def []=(key, value)
