@@ -62,7 +62,7 @@ module BaseModel
       end
 
       def source=(source)
-        raise "Folder does not exist: #{folder}" unless File.exist?(source)
+        raise "Folder does not exist: #{source}" unless File.exist?(source)
         super
       end
 
