@@ -21,13 +21,12 @@ module BaseModel
         raise 'Unimplemented'
       end
 
-      def method_missing(method, *args, &block)
-        return super unless respond_to_missing?(method)
-        @stat.send(method, *args, &block)
+      def [](key)
+        super || @stat[key.to_sym]
       end
 
-      def respond_to_missing?(method, _include_private = false)
-        @stat.respond_to? method
+      def []=(key, value)
+        change_column_value(key.to_sym, value)
       end
 
       def name
@@ -63,7 +62,7 @@ module BaseModel
       end
 
       def source=(source)
-        raise 'Folder does not exist' unless File.exist?(source)
+        raise "Folder does not exist: #{folder}" unless File.exist?(source)
         super
       end
 
