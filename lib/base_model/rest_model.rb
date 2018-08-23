@@ -65,8 +65,8 @@ module BaseModel
 
       def connection
         return @connection if @connection
-        @connection = RestConnection.connections.first
-        raise(Error, "No connection associated with #{self}: have you connected to a data source?") unless @connection
+        @connection = RestConnection.default_connection
+        raise(ConnectionError, "No connection associated with #{self}: have you connected to a data source?") unless @connection
         @connection
       end
 

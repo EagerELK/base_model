@@ -55,12 +55,19 @@ module BaseModel
     end
 
     class << self
+      attr_writer :connections, :default_connection
+
+      def default_connection
+        @default_connection ||= connections[:default] || connections.values.first
+      end
+
       def connect(url = nil, opts = {})
-        connections << new(url, opts)
+        name = opts.delete(:name) || :default
+        connections[name] = new(url, opts)
       end
 
       def connections
-        @connections ||= []
+        @connections ||= {}
       end
     end
   end

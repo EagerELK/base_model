@@ -4,7 +4,10 @@ require 'logger'
 require 'sequel/model/errors'
 
 module BaseModel
-  class ValidationFailed
+  class ValidationFailed < StandardError
+  end
+
+  class ConnectionError < StandardError
   end
 
   class Model
