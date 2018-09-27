@@ -127,6 +127,7 @@ module BaseModel
 
       def connection=(connection)
         @connection = connection
+        self
       end
 
       def source
@@ -207,6 +208,7 @@ module BaseModel
 
       def connection=(connection)
         @connection = connection
+        self
       end
 
       def create(values = {}, &block)

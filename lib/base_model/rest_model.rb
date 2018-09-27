@@ -48,7 +48,7 @@ module BaseModel
 
       def dataset
         # TODO: Return a Dataset class so that we can override count and other methods
-        connection.call(:get, source).map { |e| new(e).connection = connection }
+        connection.call(:get, source).map { |e| new(e).tap { |obj| obj.connection = connection } }
       end
 
       def all
@@ -72,10 +72,13 @@ module BaseModel
 
       def connection=(connection)
         RestConnection.default_connection = connection
+        self
       end
 
       def primary_key_lookup(pkey)
-        new(connection.call(:get, "#{source}/#{pkey}")).connection = connection
+        new(connection.call(:get, "#{source}/#{pkey}")).tap do |obj|
+          obj.connection = connection
+        end
       end
     end
 
