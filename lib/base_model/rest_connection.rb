@@ -6,9 +6,10 @@ require 'base_model/model'
 
 module BaseModel
   class RestConnection
-    attr_reader :endpoint_url, :options
+    attr_reader :endpoint_url, :options, :name
 
     def initialize(url = nil, opts = {})
+      @name = opts.delete(:name) || :default
       @endpoint_url = url || ENV['REST_ENDPOINT_URL']
       @options = opts
     end
@@ -58,12 +59,13 @@ module BaseModel
       attr_writer :connections, :default_connection
 
       def default_connection
+        return @default_connection.call if @default_connection.is_a? Proc
         @default_connection ||= connections[:default] || connections.values.first
       end
 
       def connect(url = nil, opts = {})
-        name = opts.delete(:name) || :default
-        connections[name] = new(url, opts)
+        opts[:name] ||= :default
+        connections[opts[:name]] = new(url, opts)
       end
 
       def connections
