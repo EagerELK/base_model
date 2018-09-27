@@ -17,7 +17,7 @@ module BaseModel
           if cols_to_save.nil?
             cols_to_save = opts[:changed] ? changed_columns : columns
           end
-          columns_updated = @values.reject{|k,v| !cols_to_save.include?(k)}
+          columns_updated = @values.select { |k, _v| cols_to_save.include?(k) }
           connection.call(:put, "#{source}/#{pk}", as_parameter(columns_updated).to_json)
         end
       end
@@ -47,15 +47,15 @@ module BaseModel
       end
 
       def dataset
-        # TODO Return a Dataset class so that we can override count and other methods
-        connection.call(:get, source).map { |e| new e }
+        # TODO: Return a Dataset class so that we can override count and other methods
+        connection.call(:get, source).map { |e| new(e).connection = connection }
       end
 
       def all
         dataset
       end
 
-      def where(filters = {})
+      def where(_filters = {})
         raise 'Unimplemented'
       end
 
@@ -64,14 +64,18 @@ module BaseModel
       end
 
       def connection
-        return @connection if @connection
         @connection = RestConnection.default_connection
         raise(ConnectionError, "No connection associated with #{self}: have you connected to a data source?") unless @connection
+
         @connection
       end
 
-      def primary_key_lookup(pk)
-        new connection.call(:get, "#{source}/#{pk}")
+      def connection=(connection)
+        RestConnection.default_connection = connection
+      end
+
+      def primary_key_lookup(pkey)
+        new(connection.call(:get, "#{source}/#{pkey}")).connection = connection
       end
     end
 
