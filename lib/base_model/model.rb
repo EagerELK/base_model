@@ -122,7 +122,11 @@ module BaseModel
       end
 
       def connection
-        self.class.connection
+        @connection ||= self.class.connection
+      end
+
+      def connection=(connection)
+        @connection = connection
       end
 
       def source
