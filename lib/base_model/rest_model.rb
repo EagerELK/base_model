@@ -64,14 +64,14 @@ module BaseModel
       end
 
       def connection
-        @connection = RestConnection.default_connection
+        @connection = ::BaseModel::RestConnection.default_connection
         raise(ConnectionError, "No connection associated with #{self}: have you connected to a data source?") unless @connection
 
         @connection
       end
 
       def connection=(connection)
-        RestConnection.default_connection = connection
+        ::BaseModel::RestConnection.default_connection = connection
         self
       end
 
