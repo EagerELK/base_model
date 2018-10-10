@@ -2,6 +2,7 @@
 
 require 'json'
 require 'base_model/model'
+require 'base_model/rest_connection'
 require 'active_support/inflector'
 
 module BaseModel
