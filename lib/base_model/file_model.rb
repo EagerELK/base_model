@@ -16,12 +16,13 @@ module BaseModel
 
       def id=(value)
         change_column_value(:id, value)
+        change_column_value(:filename, value)
         if value.nil?
           @path = nil
           @stat = nil
         else
           @path = File.expand_path(File.join(source, filename))
-          @stat = File::Stat.new(@path)
+          @stat = File::Stat.new(@path) if File.exists? @path
         end
         @content = nil
       end
@@ -31,12 +32,14 @@ module BaseModel
       end
 
       def filename=(value)
-        id= value
+        self.id = value
       end
 
       def _save
-        # TODO: Convert hash to yaml
-        raise 'Unimplemented'
+        File.open(path, 'wb') do |f|
+          f.rewind if f.is_a? Tempfile
+          f.write(content.is_a?(Tempfile) ? content.read : content)
+        end
       end
 
       def _destroy
@@ -60,6 +63,17 @@ module BaseModel
 
       def content
         @content ||= File.read(path) if path
+      end
+
+      # value can be a string, or a Tempfile
+      # if Tempfile, only write to the path when saving
+      def content=(value)
+        @content = value
+      end
+
+      def upload(file)
+        self.filename = File.basename(file[:filename])
+        self.content = file[:tempfile]
       end
     end
 

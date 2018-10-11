@@ -1,18 +1,21 @@
 # frozen_string_literal: true
 
 require 'yaml'
+require 'base_model'
 require 'base_model/file_model'
 require 'active_support/inflector'
+require 'active_support/core_ext/object/blank'
 
 module BaseModel
   class YamlFileModel < FileModel
     module InstanceMethods
-      def content
-        YAML.safe_load(super).deep_symbolize_keys if path
-      end
+      def parsed_content
+        return nil if content.blank?
 
-      def raw_content
-        File.read(path) if path
+        YAML.safe_load(content).deep_symbolize_keys if path
+      rescue StandardError => e
+        logger.warn e.message
+        nil
       end
     end
 
