@@ -5,6 +5,7 @@ require 'base_model'
 require 'base_model/file_model'
 require 'active_support/inflector'
 require 'active_support/core_ext/object/blank'
+require 'active_support/core_ext/hash/keys'
 
 module BaseModel
   class YamlFileModel < FileModel
@@ -12,10 +13,22 @@ module BaseModel
       def parsed_content
         return nil if content.blank?
 
-        YAML.safe_load(content).deep_symbolize_keys if path
+        @parsed_content ||= YAML.safe_load(content).deep_symbolize_keys if path
       rescue StandardError => e
         logger.warn e.message
         nil
+      end
+
+      def _save
+        @content = parsed_content.deep_stringify_keys.to_yaml
+        super
+      end
+
+      def set_column_value(column, value)
+        super(column, value)
+        return if %i[id filename].include? column.to_sym
+        @parsed_content ||= {}
+        @parsed_content[column.to_sym] = value
       end
     end
 
