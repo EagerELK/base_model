@@ -5,6 +5,15 @@ require 'sequel/model/errors'
 
 module BaseModel
   class ValidationFailed < StandardError
+    attr_reader :model
+
+    def initialize(model)
+      @model = model
+    end
+
+    def errors
+      @model.errors
+    end
   end
 
   class ConnectionError < StandardError
@@ -88,7 +97,7 @@ module BaseModel
       def after_save; end
 
       def save
-        raise ValidationFailed unless valid?
+        raise ValidationFailed, self unless valid?
         before_save
         _save
         after_save
