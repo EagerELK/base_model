@@ -38,7 +38,7 @@ module BaseModel
 
       # Returns the primary key value identifying the model instance.
       def pk
-        raise 'Unimplemented'
+        raise 'Unimplemented: Model#pk'
       end
 
       def new?
@@ -119,7 +119,7 @@ module BaseModel
       end
 
       def _destroy
-        raise 'Unimplemented'
+        raise 'Unimplemented: Model#_destroy'
       end
 
       def refresh
@@ -206,7 +206,7 @@ module BaseModel
       end
 
       def primary_key
-        raise 'Unimplemented'
+        raise 'Unimplemented: Model.primary_key'
       end
 
       def connection
@@ -254,15 +254,15 @@ module BaseModel
       end
 
       def where(_filters = {})
-        raise('Unimplemented')
+        raise('Unimplemented: Model.where')
       end
 
       def all
-        raise 'Unimplemented'
+        raise 'Unimplemented: Model.all'
       end
 
       def columns
-        raise 'Unimplemented'
+        raise 'Unimplemented: Model.columns'
       end
 
       def inherited(subclass)
@@ -283,7 +283,7 @@ module BaseModel
       private
 
       def primary_key_lookup(_pk)
-        raise 'Unimplemented'
+        raise 'Unimplemented: Model.primary_key_lookup'
       end
     end
 
