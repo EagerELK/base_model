@@ -31,8 +31,20 @@ module BaseModel
 
       def initialize_columns
         self.class.columns.each do |k|
-          self.class.send(:define_method, k, proc { self[k] }) unless self.class.method_defined?(k)
-          self.class.send(:define_method, "#{k}=", proc { |var| self[k] = var }) unless self.class.method_defined?("#{k}=")
+          unless self.class.method_defined?(k)
+            self.class.send(
+              :define_method,
+              k,
+              proc { self[k] }
+            )
+          end
+          next if self.class.method_defined?("#{k}=")
+
+          self.class.send(
+            :define_method,
+            "#{k}=",
+            proc { |var| self[k] = var }
+          )
         end
       end
 
@@ -47,8 +59,10 @@ module BaseModel
 
       def set(values = {})
         return self if values.empty?
+
         values.each do |k, v|
           next unless self.class.columns.include?(k.to_sym)
+
           change_column_value(k, v)
         end
       end
@@ -89,7 +103,7 @@ module BaseModel
 
       def valid?
         _validate
-        errors.count == 0
+        errors.count.zero?
       end
 
       def before_save; end
@@ -98,6 +112,7 @@ module BaseModel
 
       def save
         raise ValidationFailed, self unless valid?
+
         before_save
         _save
         after_save
@@ -136,7 +151,6 @@ module BaseModel
 
       def connection=(connection)
         @connection = connection
-        self
       end
 
       def source
@@ -198,6 +212,7 @@ module BaseModel
 
       def source=(source)
         raise 'No source given' if source.nil?
+
         set_source source
       end
 
@@ -212,6 +227,7 @@ module BaseModel
       def connection
         return @connection if @connection
         raise(Error, "No connection associated with #{self}: have you connected to a data source?") unless @connection
+
         @connection
       end
 
@@ -245,12 +261,12 @@ module BaseModel
         filters.is_a?(Hash) ? where(filters).first : (primary_key_lookup(filters) unless filters.nil?)
       end
 
-      def with_pk(pk)
-        primary_key_lookup(pk)
+      def with_pk(pkey)
+        primary_key_lookup(pkey)
       end
 
-      def with_pk!(pk)
-        with_pk || raise('Could not find the specified object')
+      def with_pk!(pkey)
+        with_pk(pkey) || raise('Could not find the specified object')
       end
 
       def where(_filters = {})
@@ -269,9 +285,7 @@ module BaseModel
         super
         ivs = subclass.instance_variables
         unless ivs.include?(:@source)
-          if @source && self != Model
-            subclass.set_source(@source.clone)
-          end
+          subclass.set_source(@source.clone) if @source && self != Model
         end
       end
 

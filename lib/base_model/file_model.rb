@@ -22,7 +22,7 @@ module BaseModel
           @stat = nil
         else
           @path = File.expand_path(File.join(source, filename))
-          @stat = File::Stat.new(@path) if File.exists? @path
+          @stat = File::Stat.new(@path) if File.exist? @path
         end
         @content = nil
       end
@@ -49,11 +49,13 @@ module BaseModel
 
       def [](key)
         return super unless stat.respond_to?(key.to_sym)
+
         stat.send(key.to_sym)
       end
 
       def []=(key, value)
         raise 'Read only property' if %i[path stat].include?(key)
+
         change_column_value(key.to_sym, value)
       end
 
@@ -94,6 +96,7 @@ module BaseModel
 
       def source=(source)
         raise "Folder does not exist: #{source}" unless File.exist?(source)
+
         super
       end
 

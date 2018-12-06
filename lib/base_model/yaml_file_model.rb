@@ -27,6 +27,7 @@ module BaseModel
       def set_column_value(column, value)
         super(column, value)
         return if %i[id filename].include? column.to_sym
+
         @parsed_content ||= {}
         @parsed_content[column.to_sym] = value
       end

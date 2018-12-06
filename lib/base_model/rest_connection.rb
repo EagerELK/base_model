@@ -50,7 +50,7 @@ module BaseModel
         )
         parse response
       rescue RestClient::ExceptionWithResponse, SocketError
-        retry unless (tries +=1 ) > 1
+        retry unless (tries += 1) > 1
         raise
       end
     end
@@ -60,6 +60,7 @@ module BaseModel
 
       def default_connection
         return @default_connection.call if @default_connection.is_a? Proc
+
         @default_connection ||= connections[:default] || connections.values.first
       end
 
