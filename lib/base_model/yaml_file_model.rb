@@ -31,6 +31,11 @@ module BaseModel
         @parsed_content ||= {}
         @parsed_content[column.to_sym] = value
       end
+
+      def upload(file)
+        file[:filename] = file[:filename].gsub(/\.yml$/, '.yaml')
+        super(file)
+      end
     end
 
     module ClassMethods
